@@ -257,6 +257,6 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({ ok: true, lead, crmDelivery });
   } catch (error) {
-    res.status(400).json({ ok: false, error: "Could not process lead" });
+    res.status(400).json({ ok: false, error: "Could not process lead", detail: error.message });
   }
 };
