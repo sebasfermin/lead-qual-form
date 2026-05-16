@@ -43,7 +43,7 @@ After deploying to Vercel, the form assets will be available at:
 ```text
 https://YOUR-VERCEL-DOMAIN/styles.css
 https://YOUR-VERCEL-DOMAIN/form.js
-https://YOUR-VERCEL-DOMAIN/api/leads
+https://YOUR-VERCEL-DOMAIN/api/submit
 ```
 
 ## Webflow Embed
@@ -71,7 +71,7 @@ The important parts are:
   class="lead-form"
   data-company-id="demo-remodeling"
   data-config-url="https://YOUR-VERCEL-DOMAIN/api/company?companyId=demo-remodeling"
-  data-api-url="https://YOUR-VERCEL-DOMAIN/api/leads">
+  data-api-url="https://YOUR-VERCEL-DOMAIN/api/submit">
   ...
 </section>
 
