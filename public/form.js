@@ -6,8 +6,13 @@ const submitButton = document.querySelector("#submitButton");
 const formError = document.querySelector("#formError");
 const progressBar = document.querySelector("#progressBar");
 const estimateRange = document.querySelector("#estimateRange");
+const resultEyebrow = document.querySelector("#resultEyebrow");
+const resultSummary = document.querySelector("#resultSummary");
+const finePrint = document.querySelector(".fine-print");
 const widget = document.querySelector(".lead-form");
 const apiUrl = widget?.dataset.apiUrl || "/api/leads";
+const configUrl = widget?.dataset.configUrl || "";
+const companyId = widget?.dataset.companyId || "demo-remodeling";
 
 let currentStep = 0;
 
@@ -53,7 +58,10 @@ function validateCurrentStep() {
 
 function getAnswers() {
   const data = new FormData(form);
-  return Object.fromEntries(data.entries());
+  return {
+    companyId,
+    ...Object.fromEntries(data.entries())
+  };
 }
 
 function formatMoney(value) {
@@ -62,6 +70,60 @@ function formatMoney(value) {
     currency: "USD",
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function renderOptions(fieldName, fieldConfig) {
+  const question = document.querySelector(`[data-field-question="${fieldName}"]`);
+  const options = document.querySelector(`[data-field-options="${fieldName}"]`);
+
+  if (!fieldConfig || !options) return;
+  if (question && fieldConfig.question) question.textContent = fieldConfig.question;
+
+  options.innerHTML = "";
+  fieldConfig.options.forEach((option, index) => {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = fieldName;
+    input.value = option.value;
+    if (index === 0) input.required = true;
+    label.append(input, ` ${option.label}`);
+    options.append(label);
+  });
+}
+
+function applyConfig(config) {
+  if (!config) return;
+
+  const copy = config.copy || {};
+  const eyebrow = document.querySelector(".lead-form__header .eyebrow");
+  const headline = document.querySelector("#form-title");
+  const intro = document.querySelector(".intro");
+
+  if (eyebrow && copy.eyebrow) eyebrow.textContent = copy.eyebrow;
+  if (headline && copy.headline) headline.textContent = copy.headline;
+  if (intro && copy.intro) intro.textContent = copy.intro;
+  if (resultEyebrow && copy.resultEyebrow) resultEyebrow.textContent = copy.resultEyebrow;
+  if (resultSummary && copy.resultSummary) resultSummary.textContent = copy.resultSummary;
+  if (finePrint && copy.finePrint) finePrint.textContent = copy.finePrint;
+  if (submitButton && copy.submitButton) submitButton.textContent = copy.submitButton;
+
+  Object.entries(config.fields || {}).forEach(([fieldName, fieldConfig]) => {
+    renderOptions(fieldName, fieldConfig);
+  });
+}
+
+async function loadConfig() {
+  if (!configUrl) return;
+
+  try {
+    const response = await fetch(configUrl);
+    if (!response.ok) throw new Error("Config failed");
+    const result = await response.json();
+    applyConfig(result.config);
+  } catch (error) {
+    formError.textContent = "Form settings could not load. Using default settings.";
+  }
 }
 
 nextButton.addEventListener("click", () => {
@@ -118,4 +180,4 @@ form.addEventListener("submit", async event => {
   }
 });
 
-showStep(0);
+loadConfig().finally(() => showStep(0));

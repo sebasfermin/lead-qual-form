@@ -8,7 +8,7 @@
   </head>
   <body>
     <main class="page-shell">
-      <section class="lead-form" aria-labelledby="form-title" data-api-url="/api/leads">
+      <section class="lead-form" aria-labelledby="form-title" data-api-url="/api/leads" data-config-url="/api/companies/demo-remodeling" data-company-id="demo-remodeling">
         <div class="lead-form__header">
           <p class="eyebrow">Project estimate</p>
           <h1 id="form-title">Plan your remodel with a clearer starting range</h1>
@@ -27,8 +27,8 @@
 
           <section class="step" data-step="1">
             <fieldset>
-              <legend>What type of work do you need done?</legend>
-              <div class="options">
+              <legend data-field-question="projectType">What type of work do you need done?</legend>
+              <div class="options" data-field-options="projectType">
                 <label><input type="radio" name="projectType" value="kitchen" required> Kitchen remodel</label>
                 <label><input type="radio" name="projectType" value="bathroom"> Bathroom remodel</label>
                 <label><input type="radio" name="projectType" value="basement"> Basement</label>
@@ -42,8 +42,8 @@
 
           <section class="step" data-step="2">
             <fieldset>
-              <legend>Where are you in the planning process?</legend>
-              <div class="options">
+              <legend data-field-question="timeline">Where are you in the planning process?</legend>
+              <div class="options" data-field-options="timeline">
                 <label><input type="radio" name="timeline" value="exploring" required> Just starting to explore</label>
                 <label><input type="radio" name="timeline" value="planning"> Comparing ideas and prices</label>
                 <label><input type="radio" name="timeline" value="soon"> Ready to hire soon</label>
@@ -54,8 +54,8 @@
 
           <section class="step" data-step="3">
             <fieldset>
-              <legend>How big is the space?</legend>
-              <div class="options">
+              <legend data-field-question="spaceSize">How big is the space?</legend>
+              <div class="options" data-field-options="spaceSize">
                 <label><input type="radio" name="spaceSize" value="small" required> Small</label>
                 <label><input type="radio" name="spaceSize" value="medium"> Medium</label>
                 <label><input type="radio" name="spaceSize" value="large"> Large</label>
@@ -66,8 +66,8 @@
 
           <section class="step" data-step="4">
             <fieldset>
-              <legend>How intense is the work?</legend>
-              <div class="options">
+              <legend data-field-question="scope">How intense is the work?</legend>
+              <div class="options" data-field-options="scope">
                 <label><input type="radio" name="scope" value="refresh" required> Light refresh</label>
                 <label><input type="radio" name="scope" value="partial"> Partial remodel</label>
                 <label><input type="radio" name="scope" value="full"> Full teardown</label>
@@ -78,8 +78,8 @@
 
           <section class="step" data-step="5">
             <fieldset>
-              <legend>How old is the home?</legend>
-              <div class="options">
+              <legend data-field-question="homeAge">How old is the home?</legend>
+              <div class="options" data-field-options="homeAge">
                 <label><input type="radio" name="homeAge" value="newer" required> Less than 15 years</label>
                 <label><input type="radio" name="homeAge" value="established"> 15-40 years</label>
                 <label><input type="radio" name="homeAge" value="older"> 40-75 years</label>
@@ -90,8 +90,8 @@
 
           <section class="step" data-step="6">
             <fieldset>
-              <legend>What budget range are you considering?</legend>
-              <div class="options">
+              <legend data-field-question="budget">What budget range are you considering?</legend>
+              <div class="options" data-field-options="budget">
                 <label><input type="radio" name="budget" value="under_10k" required> Under $10k</label>
                 <label><input type="radio" name="budget" value="10k_25k"> $10k-$25k</label>
                 <label><input type="radio" name="budget" value="25k_50k"> $25k-$50k</label>
@@ -114,7 +114,7 @@
           </section>
 
           <section class="step result-step" data-step="8" aria-live="polite">
-            <p class="eyebrow">Estimated planning range</p>
+            <p class="eyebrow" id="resultEyebrow">Estimated planning range</p>
             <h2 id="estimateRange">$-- to $--</h2>
             <p id="resultSummary">Your request has been sent. A project specialist can use these details to refine the estimate.</p>
             <p class="fine-print">This is a broad planning range, not a final quote. A contractor can refine it after reviewing your project.</p>

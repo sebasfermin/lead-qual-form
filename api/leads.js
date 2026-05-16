@@ -1,168 +1,71 @@
 const fs = require("fs");
 const path = require("path");
 
-const CONFIG_FILE = path.join(process.cwd(), "contractor-config.json");
-
 function money(value) {
   return Math.round(value / 500) * 500;
 }
 
-function calculateLead(answers) {
-  const projectBase = {
-    kitchen: [25000, 85000],
-    bathroom: [12000, 45000],
-    basement: [30000, 90000],
-    landscaping: [8000, 60000],
-    deck: [10000, 55000],
-    whole_home: [90000, 300000],
-    other: [10000, 75000]
-  };
-
-  const sizeMultiplier = {
-    small: 0.8,
-    medium: 1,
-    large: 1.35,
-    extra_large: 1.7
-  };
-
-  const scopeMultiplier = {
-    refresh: 0.75,
-    partial: 1,
-    full: 1.45,
-    structural: 1.9
-  };
-
-  const ageMultiplier = {
-    newer: 1,
-    established: 1.08,
-    older: 1.18,
-    historic: 1.32
-  };
-
-  const budgetScore = {
-    under_10k: 4,
-    "10k_25k": 9,
-    "25k_50k": 16,
-    "50k_100k": 22,
-    "100k_plus": 25,
-    unknown: 10
-  };
-
-  const timelineScore = {
-    exploring: 5,
-    planning: 10,
-    soon: 17,
-    urgent: 20
-  };
-
-  const scopeScore = {
-    refresh: 8,
-    partial: 13,
-    full: 18,
-    structural: 20
-  };
-
-  const sizeScore = {
-    small: 7,
-    medium: 11,
-    large: 15,
-    extra_large: 18
-  };
-
-  const base = projectBase[answers.projectType] || projectBase.other;
+function calculateLead(answers, config) {
+  const baseRanges = config.estimate?.baseRanges || {};
+  const multipliers = config.estimate?.multipliers || {};
+  const scoring = config.scoring || {};
+  const base = baseRanges[answers.projectType] || baseRanges.other || [10000, 75000];
   const multiplier =
-    (sizeMultiplier[answers.spaceSize] || 1) *
-    (scopeMultiplier[answers.scope] || 1) *
-    (ageMultiplier[answers.homeAge] || 1);
+    (multipliers.spaceSize?.[answers.spaceSize] || 1) *
+    (multipliers.scope?.[answers.scope] || 1) *
+    (multipliers.homeAge?.[answers.homeAge] || 1);
 
   const estimateLow = money(base[0] * multiplier);
   const estimateHigh = money(base[1] * multiplier);
 
   const hasPostalCode = answers.postalCode && answers.postalCode.trim().length >= 5;
   const hasPhone = answers.phone && answers.phone.trim().length >= 7;
-  const contactScore = (hasPostalCode ? 7 : 0) + (hasPhone ? 10 : 0);
+  const contactScore =
+    (hasPostalCode ? scoring.contact?.postalCode || 0 : 0) +
+    (hasPhone ? scoring.contact?.phone || 0 : 0);
   const score = Math.min(
     100,
-    (budgetScore[answers.budget] || 0) +
-      (timelineScore[answers.timeline] || 0) +
-      (scopeScore[answers.scope] || 0) +
-      (sizeScore[answers.spaceSize] || 0) +
+    (scoring.budget?.[answers.budget] || 0) +
+      (scoring.timeline?.[answers.timeline] || 0) +
+      (scoring.scope?.[answers.scope] || 0) +
+      (scoring.spaceSize?.[answers.spaceSize] || 0) +
       contactScore
   );
 
-  let tier = "Low Fit";
-  if (score >= 80) tier = "Priority Lead";
-  else if (score >= 60) tier = "Qualified Lead";
-  else if (score >= 40) tier = "Nurture Lead";
+  const tiers = scoring.tiers || [{ min: 0, label: "Low Fit" }];
+  const tier = tiers.find(item => score >= item.min)?.label || "Low Fit";
 
   return { score, tier, estimateLow, estimateHigh };
 }
 
-function readConfig() {
-  if (!fs.existsSync(CONFIG_FILE)) {
+function readCompanyConfig(companyId) {
+  const safeCompanyId = String(companyId || "demo-remodeling").replace(/[^a-z0-9-_]/gi, "");
+  const filePath = path.join(process.cwd(), "companies", `${safeCompanyId}.json`);
+
+  if (!fs.existsSync(filePath)) {
     return {};
   }
 
-  return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function leadLabels(answers) {
-  const labels = {
-    projectType: {
-      kitchen: "Kitchen remodel",
-      bathroom: "Bathroom remodel",
-      basement: "Basement",
-      landscaping: "Landscaping",
-      deck: "Deck or patio",
-      whole_home: "Whole-home renovation",
-      other: "Other"
-    },
-    timeline: {
-      exploring: "Just starting to explore",
-      planning: "Comparing ideas and prices",
-      soon: "Ready to hire soon",
-      urgent: "Need the work done urgently"
-    },
-    spaceSize: {
-      small: "Small",
-      medium: "Medium",
-      large: "Large",
-      extra_large: "Extra large"
-    },
-    scope: {
-      refresh: "Light refresh",
-      partial: "Partial remodel",
-      full: "Full teardown",
-      structural: "Heavy or structural work"
-    },
-    homeAge: {
-      newer: "Less than 15 years",
-      established: "15-40 years",
-      older: "40-75 years",
-      historic: "75+ years"
-    },
-    budget: {
-      under_10k: "Under $10k",
-      "10k_25k": "$10k-$25k",
-      "25k_50k": "$25k-$50k",
-      "50k_100k": "$50k-$100k",
-      "100k_plus": "$100k+",
-      unknown: "I don't know yet"
-    }
-  };
+function optionLabel(config, fieldName, value) {
+  return config.fields?.[fieldName]?.options?.find(option => option.value === value)?.label || value;
+}
 
+function leadLabels(answers, config) {
   return {
-    projectType: labels.projectType[answers.projectType] || answers.projectType,
-    timeline: labels.timeline[answers.timeline] || answers.timeline,
-    spaceSize: labels.spaceSize[answers.spaceSize] || answers.spaceSize,
-    scope: labels.scope[answers.scope] || answers.scope,
-    homeAge: labels.homeAge[answers.homeAge] || answers.homeAge,
-    budget: labels.budget[answers.budget] || answers.budget
+    projectType: optionLabel(config, "projectType", answers.projectType),
+    timeline: optionLabel(config, "timeline", answers.timeline),
+    spaceSize: optionLabel(config, "spaceSize", answers.spaceSize),
+    scope: optionLabel(config, "scope", answers.scope),
+    homeAge: optionLabel(config, "homeAge", answers.homeAge),
+    budget: optionLabel(config, "budget", answers.budget)
   };
 }
 
 function buildCrmPayload(lead, config) {
-  const labels = leadLabels(lead.answers);
+  const labels = leadLabels(lead.answers, config);
 
   return {
     source: "Lead Qualification System",
@@ -224,8 +127,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const answers = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const config = readConfig();
-    const qualification = calculateLead(answers);
+    const config = readCompanyConfig(answers.companyId);
+    const qualification = calculateLead(answers, config);
     const lead = {
       id: `lead_${Date.now()}`,
       createdAt: new Date().toISOString(),
