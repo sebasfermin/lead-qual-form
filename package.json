@@ -1,0 +1,9 @@
+{
+  "name": "lead-qualification-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test:zapier": "node test-zapier.js"
+  }
+}

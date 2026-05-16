@@ -1,0 +1,126 @@
+<!-- Lead Qualification System: paste this into a Webflow Embed element for local testing. -->
+<link rel="stylesheet" href="http://127.0.0.1:3002/styles.css">
+
+<section class="lead-form" aria-labelledby="form-title" data-api-url="http://127.0.0.1:3002/api/leads">
+  <div class="lead-form__header">
+    <p class="eyebrow">Project estimate</p>
+    <h1 id="form-title">Plan your remodel with a clearer starting range</h1>
+    <p class="intro">Answer a few questions and we will estimate the likely project range.</p>
+  </div>
+
+  <div class="progress" aria-label="Form progress">
+    <span class="progress__bar" id="progressBar"></span>
+  </div>
+
+  <form id="leadForm" novalidate>
+    <section class="step is-active" data-step="0">
+      <label for="postalCode">What is your postal code?</label>
+      <input id="postalCode" name="postalCode" inputmode="numeric" autocomplete="postal-code" placeholder="Enter postal code" required>
+    </section>
+
+    <section class="step" data-step="1">
+      <fieldset>
+        <legend>What type of work do you need done?</legend>
+        <div class="options">
+          <label><input type="radio" name="projectType" value="kitchen" required> Kitchen remodel</label>
+          <label><input type="radio" name="projectType" value="bathroom"> Bathroom remodel</label>
+          <label><input type="radio" name="projectType" value="basement"> Basement</label>
+          <label><input type="radio" name="projectType" value="landscaping"> Landscaping</label>
+          <label><input type="radio" name="projectType" value="deck"> Deck or patio</label>
+          <label><input type="radio" name="projectType" value="whole_home"> Whole-home renovation</label>
+          <label><input type="radio" name="projectType" value="other"> Other</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="step" data-step="2">
+      <fieldset>
+        <legend>Where are you in the planning process?</legend>
+        <div class="options">
+          <label><input type="radio" name="timeline" value="exploring" required> Just starting to explore</label>
+          <label><input type="radio" name="timeline" value="planning"> Comparing ideas and prices</label>
+          <label><input type="radio" name="timeline" value="soon"> Ready to hire soon</label>
+          <label><input type="radio" name="timeline" value="urgent"> Need the work done urgently</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="step" data-step="3">
+      <fieldset>
+        <legend>How big is the space?</legend>
+        <div class="options">
+          <label><input type="radio" name="spaceSize" value="small" required> Small</label>
+          <label><input type="radio" name="spaceSize" value="medium"> Medium</label>
+          <label><input type="radio" name="spaceSize" value="large"> Large</label>
+          <label><input type="radio" name="spaceSize" value="extra_large"> Extra large</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="step" data-step="4">
+      <fieldset>
+        <legend>How intense is the work?</legend>
+        <div class="options">
+          <label><input type="radio" name="scope" value="refresh" required> Light refresh</label>
+          <label><input type="radio" name="scope" value="partial"> Partial remodel</label>
+          <label><input type="radio" name="scope" value="full"> Full teardown</label>
+          <label><input type="radio" name="scope" value="structural"> Heavy or structural work</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="step" data-step="5">
+      <fieldset>
+        <legend>How old is the home?</legend>
+        <div class="options">
+          <label><input type="radio" name="homeAge" value="newer" required> Less than 15 years</label>
+          <label><input type="radio" name="homeAge" value="established"> 15-40 years</label>
+          <label><input type="radio" name="homeAge" value="older"> 40-75 years</label>
+          <label><input type="radio" name="homeAge" value="historic"> 75+ years</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="step" data-step="6">
+      <fieldset>
+        <legend>What budget range are you considering?</legend>
+        <div class="options">
+          <label><input type="radio" name="budget" value="under_10k" required> Under $10k</label>
+          <label><input type="radio" name="budget" value="10k_25k"> $10k-$25k</label>
+          <label><input type="radio" name="budget" value="25k_50k"> $25k-$50k</label>
+          <label><input type="radio" name="budget" value="50k_100k"> $50k-$100k</label>
+          <label><input type="radio" name="budget" value="100k_plus"> $100k+</label>
+          <label><input type="radio" name="budget" value="unknown"> I don't know yet</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="step" data-step="7">
+      <div class="contact-grid">
+        <label for="name">Your name
+          <input id="name" name="name" autocomplete="name" placeholder="Full name" required>
+        </label>
+        <label for="phone">Phone number
+          <input id="phone" name="phone" autocomplete="tel" placeholder="Best phone number" required>
+        </label>
+      </div>
+    </section>
+
+    <section class="step result-step" data-step="8" aria-live="polite">
+      <p class="eyebrow">Estimated planning range</p>
+      <h2 id="estimateRange">$-- to $--</h2>
+      <p id="resultSummary">Your request has been sent. A project specialist can use these details to refine the estimate.</p>
+      <p class="fine-print">This is a broad planning range, not a final quote. A contractor can refine it after reviewing your project.</p>
+    </section>
+
+    <p class="error" id="formError" role="alert"></p>
+
+    <div class="actions">
+      <button type="button" class="button button--secondary" id="backButton">Back</button>
+      <button type="button" class="button" id="nextButton">Next</button>
+      <button type="submit" class="button" id="submitButton">Get estimate</button>
+    </div>
+  </form>
+</section>
+
+<script src="http://127.0.0.1:3002/form.js"></script>
