@@ -106,6 +106,23 @@ async function sendToCrm(lead, config) {
   return { skipped: false, status: response.status };
 }
 
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", chunk => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (error) {
+        reject(error);
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -126,7 +143,10 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const answers = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const answers =
+      req.body && typeof req.body === "string"
+        ? JSON.parse(req.body)
+        : req.body || (await readBody(req));
     const config = readCompanyConfig(answers.companyId);
     const qualification = calculateLead(answers, config);
     const lead = {
