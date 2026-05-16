@@ -70,7 +70,7 @@ The important parts are:
 <section
   class="lead-form"
   data-company-id="demo-remodeling"
-  data-config-url="https://YOUR-VERCEL-DOMAIN/api/companies/demo-remodeling"
+  data-config-url="https://YOUR-VERCEL-DOMAIN/api/company?companyId=demo-remodeling"
   data-api-url="https://YOUR-VERCEL-DOMAIN/api/leads">
   ...
 </section>
@@ -144,7 +144,7 @@ Then update the Webflow embed:
 
 ```html
 data-company-id="acme-remodeling"
-data-config-url="https://YOUR-VERCEL-DOMAIN/api/companies/acme-remodeling"
+data-config-url="https://YOUR-VERCEL-DOMAIN/api/company?companyId=acme-remodeling"
 ```
 
 ## Note About Lead Storage
