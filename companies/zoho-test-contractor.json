@@ -2,7 +2,7 @@
   "companyId": "zoho-test-contractor",
   "businessName": "Zoho Test Contractor",
   "airtable": {
-    "baseId": "appK7LY9zIpDH0YWL",
+    "baseId": "app8H8QT08umJ0wGH",
     "tableId": "tblgkwnwfos7zgbJq",
     "fieldMap": {
       "name": "Name",
