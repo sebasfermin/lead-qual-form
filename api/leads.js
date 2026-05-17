@@ -219,10 +219,33 @@ async function sendToCrm(lead, config) {
   return { skipped: false, status: response.status };
 }
 
-function buildAirtableFields(lead, config) {
+async function getAirtableFieldNames(baseId, tableId, token) {
+  const response = await fetch(`https://api.airtable.com/v0/meta/bases/${baseId}/tables`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Airtable schema lookup failed with ${response.status}: ${detail}`);
+  }
+
+  const schema = await response.json();
+  const table = schema.tables?.find(item => item.id === tableId || item.name === tableId);
+
+  if (!table) {
+    throw new Error(`Airtable table not found in base: ${tableId}`);
+  }
+
+  return new Set((table.fields || []).map(field => field.name));
+}
+
+function buildAirtableFields(lead, config, availableFieldNames) {
   const payload = buildCrmPayload(lead, config);
   const fieldMap = config.airtable?.fieldMap || {};
   const fields = {};
+  const missingFields = [];
 
   Object.entries(fieldMap).forEach(([payloadKey, airtableFieldName]) => {
     if (!airtableFieldName) return;
@@ -230,8 +253,17 @@ function buildAirtableFields(lead, config) {
     const value = payload[payloadKey];
     if (value === undefined || value === null) return;
 
+    if (availableFieldNames && !availableFieldNames.has(airtableFieldName)) {
+      missingFields.push(airtableFieldName);
+      return;
+    }
+
     fields[airtableFieldName] = value;
   });
+
+  if (missingFields.length) {
+    console.warn("Skipped Airtable fields that do not exist:", missingFields);
+  }
 
   return fields;
 }
@@ -249,9 +281,10 @@ async function sendToAirtable(lead, config) {
     throw new Error("AIRTABLE_TOKEN is not configured");
   }
 
-  const fields = buildAirtableFields(lead, config);
+  const availableFieldNames = await getAirtableFieldNames(baseId, tableId, token);
+  const fields = buildAirtableFields(lead, config, availableFieldNames);
   if (!Object.keys(fields).length) {
-    throw new Error("Airtable field map is empty");
+    throw new Error("Airtable field map has no fields matching the destination table");
   }
 
   const response = await fetch(`https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableId)}`, {

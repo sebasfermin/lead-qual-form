@@ -165,9 +165,11 @@ form.addEventListener("submit", async event => {
       body: JSON.stringify(getAnswers())
     });
 
-    if (!response.ok) throw new Error("Submission failed");
-
     const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Submission failed");
+    }
+
     const qualification = result.estimate || result.lead?.qualification;
 
     estimateRange.textContent = `${formatMoney(qualification.estimateLow)} to ${formatMoney(qualification.estimateHigh)}`;
@@ -176,7 +178,7 @@ form.addEventListener("submit", async event => {
     formError.textContent =
       error.message === "FILE_PREVIEW"
         ? "This preview needs to run through the local server before it can submit."
-        : "Something went wrong. Please make sure the local server is running and try again.";
+        : error.message || "Something went wrong. Please try again.";
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = "Get estimate";
