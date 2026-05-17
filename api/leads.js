@@ -219,6 +219,74 @@ async function sendToCrm(lead, config) {
   return { skipped: false, status: response.status };
 }
 
+function buildAirtableFields(lead, config) {
+  const payload = buildCrmPayload(lead, config);
+  const fieldMap = config.airtable?.fieldMap || {};
+  const fields = {};
+
+  Object.entries(fieldMap).forEach(([payloadKey, airtableFieldName]) => {
+    if (!airtableFieldName) return;
+
+    const value = payload[payloadKey];
+    if (value === undefined || value === null) return;
+
+    fields[airtableFieldName] = value;
+  });
+
+  return fields;
+}
+
+async function sendToAirtable(lead, config) {
+  const baseId = config.airtable?.baseId;
+  const tableId = config.airtable?.tableId;
+  const token = process.env.AIRTABLE_TOKEN;
+
+  if (!baseId || !tableId) {
+    return { skipped: true, reason: "Airtable destination is not configured" };
+  }
+
+  if (!token) {
+    throw new Error("AIRTABLE_TOKEN is not configured");
+  }
+
+  const fields = buildAirtableFields(lead, config);
+  if (!Object.keys(fields).length) {
+    throw new Error("Airtable field map is empty");
+  }
+
+  const response = await fetch(`https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableId)}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      records: [{ fields }],
+      typecast: true
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Airtable delivery failed with ${response.status}: ${detail}`);
+  }
+
+  const result = await response.json();
+  return {
+    skipped: false,
+    status: response.status,
+    recordId: result.records?.[0]?.id
+  };
+}
+
+async function deliverLead(lead, config) {
+  if (config.airtable?.baseId && config.airtable?.tableId) {
+    return sendToAirtable(lead, config);
+  }
+
+  return sendToCrm(lead, config);
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let body = "";
@@ -282,14 +350,16 @@ module.exports = async function handler(req, res) {
     try {
       lead.aiAnalysis = await analyzeLead(lead, config);
     } catch (error) {
+      console.error("Lead AI analysis failed:", error);
       lead.aiAnalysis = { ...emptyAiAnalysis(), error: error.message };
     }
 
-    let crmDelivery;
+    let delivery;
     try {
-      crmDelivery = await sendToCrm(lead, config);
+      delivery = await deliverLead(lead, config);
     } catch (error) {
-      crmDelivery = { skipped: false, error: error.message };
+      console.error("Lead delivery failed:", error);
+      delivery = { skipped: false, error: error.message };
     }
 
     res.status(200).json(publicSubmitResponse(lead));

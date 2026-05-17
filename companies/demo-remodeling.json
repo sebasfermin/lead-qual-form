@@ -2,11 +2,22 @@
   "companyId": "demo-remodeling",
   "businessName": "Demo Remodeling Co.",
   "airtable": {
-  "baseId": "appK7LY9zIpDH0YWL",
-  "tableId": "tblgkwnwfos7zgbJq"
-},
-  "crmWebhookUrl": "https://hooks.zapier.com/hooks/catch/11917962/4obo9l1/",
-  "crmWebhookEnabled": true,
+    "baseId": "appK7LY9zIpDH0YWL",
+    "tableId": "tblgkwnwfos7zgbJq",
+    "fieldMap": {
+      "name": "Name",
+      "phone": "Phone",
+      "postalCode": "Zip Code",
+      "leadScore": "Score",
+      "budget": "Budget",
+      "message": "Message",
+      "aiSummary": "AI Summary",
+      "aiSalesNotes": "AI Sales Notes",
+      "aiRiskFlags": "AI Risk Flags",
+      "aiTalkingPoints": "AI Talking points",
+      "aiRecommendedFollowUp": "AI Recommended Follow Up"
+    }
+  },
   "copy": {
     "eyebrow": "Project estimate",
     "headline": "Plan your remodel with a clearer starting range",
@@ -20,72 +31,180 @@
     "projectType": {
       "question": "What type of work do you need done?",
       "options": [
-        { "value": "kitchen", "label": "Kitchen remodel" },
-        { "value": "bathroom", "label": "Bathroom remodel" },
-        { "value": "basement", "label": "Basement" },
-        { "value": "landscaping", "label": "Landscaping" },
-        { "value": "deck", "label": "Deck or patio" },
-        { "value": "whole_home", "label": "Whole-home renovation" },
-        { "value": "other", "label": "Other" }
+        {
+          "value": "kitchen",
+          "label": "Kitchen remodel"
+        },
+        {
+          "value": "bathroom",
+          "label": "Bathroom remodel"
+        },
+        {
+          "value": "basement",
+          "label": "Basement"
+        },
+        {
+          "value": "landscaping",
+          "label": "Landscaping"
+        },
+        {
+          "value": "deck",
+          "label": "Deck or patio"
+        },
+        {
+          "value": "whole_home",
+          "label": "Whole-home renovation"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        }
       ]
     },
     "timeline": {
       "question": "Where are you in the planning process?",
       "options": [
-        { "value": "exploring", "label": "Just starting to explore" },
-        { "value": "planning", "label": "Comparing ideas and prices" },
-        { "value": "soon", "label": "Ready to hire soon" },
-        { "value": "urgent", "label": "Need the work done urgently" }
+        {
+          "value": "exploring",
+          "label": "Just starting to explore"
+        },
+        {
+          "value": "planning",
+          "label": "Comparing ideas and prices"
+        },
+        {
+          "value": "soon",
+          "label": "Ready to hire soon"
+        },
+        {
+          "value": "urgent",
+          "label": "Need the work done urgently"
+        }
       ]
     },
     "spaceSize": {
       "question": "How big is the space?",
       "options": [
-        { "value": "small", "label": "Small" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "large", "label": "Large" },
-        { "value": "extra_large", "label": "Extra large" }
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "extra_large",
+          "label": "Extra large"
+        }
       ]
     },
     "scope": {
       "question": "How intense is the work?",
       "options": [
-        { "value": "refresh", "label": "Light refresh" },
-        { "value": "partial", "label": "Partial remodel" },
-        { "value": "full", "label": "Full teardown" },
-        { "value": "structural", "label": "Heavy or structural work" }
+        {
+          "value": "refresh",
+          "label": "Light refresh"
+        },
+        {
+          "value": "partial",
+          "label": "Partial remodel"
+        },
+        {
+          "value": "full",
+          "label": "Full teardown"
+        },
+        {
+          "value": "structural",
+          "label": "Heavy or structural work"
+        }
       ]
     },
     "homeAge": {
       "question": "How old is the home?",
       "options": [
-        { "value": "newer", "label": "Less than 15 years" },
-        { "value": "established", "label": "15-40 years" },
-        { "value": "older", "label": "40-75 years" },
-        { "value": "historic", "label": "75+ years" }
+        {
+          "value": "newer",
+          "label": "Less than 15 years"
+        },
+        {
+          "value": "established",
+          "label": "15-40 years"
+        },
+        {
+          "value": "older",
+          "label": "40-75 years"
+        },
+        {
+          "value": "historic",
+          "label": "75+ years"
+        }
       ]
     },
     "budget": {
       "question": "What budget range are you considering?",
       "options": [
-        { "value": "under_10k", "label": "Under $10k" },
-        { "value": "10k_25k", "label": "$10k-$25k" },
-        { "value": "25k_50k", "label": "$25k-$50k" },
-        { "value": "50k_100k", "label": "$50k-$100k" },
-        { "value": "100k_plus", "label": "$100k+" },
-        { "value": "unknown", "label": "I don't know yet" }
+        {
+          "value": "under_10k",
+          "label": "Under $10k"
+        },
+        {
+          "value": "10k_25k",
+          "label": "$10k-$25k"
+        },
+        {
+          "value": "25k_50k",
+          "label": "$25k-$50k"
+        },
+        {
+          "value": "50k_100k",
+          "label": "$50k-$100k"
+        },
+        {
+          "value": "100k_plus",
+          "label": "$100k+"
+        },
+        {
+          "value": "unknown",
+          "label": "I don't know yet"
+        }
       ]
     }
   },
   "estimate": {
     "baseRanges": {
-      "kitchen": [25000, 85000],
-      "bathroom": [12000, 45000],
-      "basement": [30000, 90000],
-      "landscaping": [8000, 60000],
-      "deck": [10000, 55000],
-      "whole_home": [90000, 300000],
-      "other": [10000, 75000]
+      "kitchen": [
+        25000,
+        85000
+      ],
+      "bathroom": [
+        12000,
+        45000
+      ],
+      "basement": [
+        30000,
+        90000
+      ],
+      "landscaping": [
+        8000,
+        60000
+      ],
+      "deck": [
+        10000,
+        55000
+      ],
+      "whole_home": [
+        90000,
+        300000
+      ],
+      "other": [
+        10000,
+        75000
+      ]
     },
     "multipliers": {
       "spaceSize": {
@@ -140,10 +259,22 @@
       "phone": 10
     },
     "tiers": [
-      { "min": 80, "label": "Priority Lead" },
-      { "min": 60, "label": "Qualified Lead" },
-      { "min": 40, "label": "Nurture Lead" },
-      { "min": 0, "label": "Low Fit" }
+      {
+        "min": 80,
+        "label": "Priority Lead"
+      },
+      {
+        "min": 60,
+        "label": "Qualified Lead"
+      },
+      {
+        "min": 40,
+        "label": "Nurture Lead"
+      },
+      {
+        "min": 0,
+        "label": "Low Fit"
+      }
     ]
   }
 }
