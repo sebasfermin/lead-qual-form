@@ -1,6 +1,10 @@
 {
   "companyId": "demo-remodeling",
   "businessName": "Demo Remodeling Co.",
+  "airtable": {
+  "baseId": "appK7LY9zIpDH0YWL",
+  "tableId": "tblgkwnwfos7zgbJq"
+},
   "crmWebhookUrl": "https://hooks.zapier.com/hooks/catch/11917962/4obo9l1/",
   "crmWebhookEnabled": true,
   "copy": {
