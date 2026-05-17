@@ -362,6 +362,14 @@ module.exports = async function handler(req, res) {
       delivery = { skipped: false, error: error.message };
     }
 
+    if (delivery.error || delivery.skipped) {
+      res.status(502).json({
+        ok: false,
+        error: "Lead could not be saved. Please try again."
+      });
+      return;
+    }
+
     res.status(200).json(publicSubmitResponse(lead));
   } catch (error) {
     res.status(400).json({ ok: false, error: "Could not process lead", detail: error.message });
