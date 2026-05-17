@@ -122,7 +122,10 @@ function parseOpenAiText(result) {
 }
 
 async function analyzeLead(lead, config) {
-  if (!process.env.OPENAI_API_KEY) return emptyAiAnalysis();
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn("OPENAI_API_KEY is not configured; skipping AI analysis.");
+    return emptyAiAnalysis();
+  }
 
   const labels = leadLabels(lead.answers, config);
   const response = await fetch("https://api.openai.com/v1/responses", {
@@ -132,7 +135,7 @@ async function analyzeLead(lead, config) {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || "gpt-5.4-mini",
+      model: process.env.OPENAI_MODEL || "gpt-5.2",
       input: [
         {
           role: "system",
@@ -169,6 +172,7 @@ async function analyzeLead(lead, config) {
         format: {
           type: "json_schema",
           name: "lead_ai_analysis",
+          strict: true,
           schema: {
             type: "object",
             additionalProperties: false,
@@ -193,11 +197,16 @@ async function analyzeLead(lead, config) {
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI analysis failed with ${response.status}`);
+    const detail = await response.text();
+    throw new Error(`OpenAI analysis failed with ${response.status}: ${detail}`);
   }
 
   const result = await response.json();
   const text = parseOpenAiText(result);
+  if (!text) {
+    throw new Error("OpenAI analysis response did not include output text");
+  }
+
   return { ...emptyAiAnalysis(), ...JSON.parse(text) };
 }
 
