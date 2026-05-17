@@ -242,6 +242,16 @@ function setCors(res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
+function publicSubmitResponse(lead) {
+  return {
+    ok: true,
+    estimate: {
+      estimateLow: lead.qualification.estimateLow,
+      estimateHigh: lead.qualification.estimateHigh
+    }
+  };
+}
+
 module.exports = async function handler(req, res) {
   setCors(res);
 
@@ -282,7 +292,7 @@ module.exports = async function handler(req, res) {
       crmDelivery = { skipped: false, error: error.message };
     }
 
-    res.status(200).json({ ok: true, lead, crmDelivery });
+    res.status(200).json(publicSubmitResponse(lead));
   } catch (error) {
     res.status(400).json({ ok: false, error: "Could not process lead", detail: error.message });
   }

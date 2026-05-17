@@ -18,6 +18,15 @@ function readCompanyConfig(companyId) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+function publicCompanyConfig(config) {
+  return {
+    companyId: config.companyId,
+    businessName: config.businessName,
+    copy: config.copy || {},
+    fields: config.fields || {}
+  };
+}
+
 module.exports = function handler(req, res) {
   setCors(res);
 
@@ -38,5 +47,5 @@ module.exports = function handler(req, res) {
     return;
   }
 
-  res.status(200).json({ ok: true, config });
+  res.status(200).json({ ok: true, config: publicCompanyConfig(config) });
 };

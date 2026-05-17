@@ -168,7 +168,7 @@ form.addEventListener("submit", async event => {
     if (!response.ok) throw new Error("Submission failed");
 
     const result = await response.json();
-    const qualification = result.lead.qualification;
+    const qualification = result.estimate || result.lead?.qualification;
 
     estimateRange.textContent = `${formatMoney(qualification.estimateLow)} to ${formatMoney(qualification.estimateHigh)}`;
     showStep(steps.length - 1);
