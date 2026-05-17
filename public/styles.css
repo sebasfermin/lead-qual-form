@@ -113,7 +113,8 @@ fieldset {
 }
 
 input[type="text"],
-input:not([type]) {
+input:not([type]),
+textarea {
   width: 100%;
   margin-top: 10px;
   border: 1px solid var(--lqs-border);
@@ -121,6 +122,16 @@ input:not([type]) {
   padding: 14px 16px;
   color: var(--lqs-text);
   font: inherit;
+}
+
+textarea {
+  min-height: 120px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+textarea::placeholder {
+  color: var(--lqs-muted);
 }
 
 .options {

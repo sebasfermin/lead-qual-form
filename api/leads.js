@@ -1,96 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 
-const fallbackConfig = {
-  businessName: "Demo Remodeling Co.",
-  crmWebhookUrl: "https://hooks.zapier.com/hooks/catch/11917962/4obo9l1/",
-  crmWebhookEnabled: true,
-  fields: {
-    projectType: {
-      options: [
-        { value: "kitchen", label: "Kitchen remodel" },
-        { value: "bathroom", label: "Bathroom remodel" },
-        { value: "basement", label: "Basement" },
-        { value: "landscaping", label: "Landscaping" },
-        { value: "deck", label: "Deck or patio" },
-        { value: "whole_home", label: "Whole-home renovation" },
-        { value: "other", label: "Other" }
-      ]
-    },
-    timeline: {
-      options: [
-        { value: "exploring", label: "Just starting to explore" },
-        { value: "planning", label: "Comparing ideas and prices" },
-        { value: "soon", label: "Ready to hire soon" },
-        { value: "urgent", label: "Need the work done urgently" }
-      ]
-    },
-    spaceSize: {
-      options: [
-        { value: "small", label: "Small" },
-        { value: "medium", label: "Medium" },
-        { value: "large", label: "Large" },
-        { value: "extra_large", label: "Extra large" }
-      ]
-    },
-    scope: {
-      options: [
-        { value: "refresh", label: "Light refresh" },
-        { value: "partial", label: "Partial remodel" },
-        { value: "full", label: "Full teardown" },
-        { value: "structural", label: "Heavy or structural work" }
-      ]
-    },
-    homeAge: {
-      options: [
-        { value: "newer", label: "Less than 15 years" },
-        { value: "established", label: "15-40 years" },
-        { value: "older", label: "40-75 years" },
-        { value: "historic", label: "75+ years" }
-      ]
-    },
-    budget: {
-      options: [
-        { value: "under_10k", label: "Under $10k" },
-        { value: "10k_25k", label: "$10k-$25k" },
-        { value: "25k_50k", label: "$25k-$50k" },
-        { value: "50k_100k", label: "$50k-$100k" },
-        { value: "100k_plus", label: "$100k+" },
-        { value: "unknown", label: "I don't know yet" }
-      ]
-    }
-  },
-  estimate: {
-    baseRanges: {
-      kitchen: [25000, 85000],
-      bathroom: [12000, 45000],
-      basement: [30000, 90000],
-      landscaping: [8000, 60000],
-      deck: [10000, 55000],
-      whole_home: [90000, 300000],
-      other: [10000, 75000]
-    },
-    multipliers: {
-      spaceSize: { small: 0.8, medium: 1, large: 1.35, extra_large: 1.7 },
-      scope: { refresh: 0.75, partial: 1, full: 1.45, structural: 1.9 },
-      homeAge: { newer: 1, established: 1.08, older: 1.18, historic: 1.32 }
-    }
-  },
-  scoring: {
-    budget: { under_10k: 4, "10k_25k": 9, "25k_50k": 16, "50k_100k": 22, "100k_plus": 25, unknown: 10 },
-    timeline: { exploring: 5, planning: 10, soon: 17, urgent: 20 },
-    scope: { refresh: 8, partial: 13, full: 18, structural: 20 },
-    spaceSize: { small: 7, medium: 11, large: 15, extra_large: 18 },
-    contact: { postalCode: 7, phone: 10 },
-    tiers: [
-      { min: 80, label: "Priority Lead" },
-      { min: 60, label: "Qualified Lead" },
-      { min: 40, label: "Nurture Lead" },
-      { min: 0, label: "Low Fit" }
-    ]
-  }
-};
-
 function money(value) {
   return Math.round(value / 500) * 500;
 }
@@ -133,13 +43,10 @@ function readCompanyConfig(companyId) {
   const filePath = path.join(process.cwd(), "companies", `${safeCompanyId}.json`);
 
   if (!fs.existsSync(filePath)) {
-    return fallbackConfig;
+    throw new Error(`Company config not found: ${safeCompanyId}`);
   }
 
-  return {
-    ...fallbackConfig,
-    ...JSON.parse(fs.readFileSync(filePath, "utf8"))
-  };
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
 function optionLabel(config, fieldName, value) {
@@ -159,6 +66,7 @@ function leadLabels(answers, config) {
 
 function buildCrmPayload(lead, config) {
   const labels = leadLabels(lead.answers, config);
+  const ai = lead.aiAnalysis || {};
 
   return {
     source: "Lead Qualification System",
@@ -167,6 +75,7 @@ function buildCrmPayload(lead, config) {
     createdAt: lead.createdAt,
     name: lead.answers.name,
     phone: lead.answers.phone,
+    message: lead.answers.message || "",
     postalCode: lead.answers.postalCode,
     projectType: labels.projectType,
     timeline: labels.timeline,
@@ -177,8 +86,119 @@ function buildCrmPayload(lead, config) {
     estimateLow: lead.qualification.estimateLow,
     estimateHigh: lead.qualification.estimateHigh,
     leadScore: lead.qualification.score,
-    leadTier: lead.qualification.tier
+    leadTier: lead.qualification.tier,
+    aiSummary: ai.summary || "",
+    aiSalesNotes: ai.salesNotes || "",
+    aiRiskFlags: Array.isArray(ai.riskFlags) ? ai.riskFlags.join(", ") : ai.riskFlags || "",
+    aiTalkingPoints: Array.isArray(ai.talkingPoints) ? ai.talkingPoints.join("\n") : ai.talkingPoints || "",
+    aiRecommendedFollowUp: ai.recommendedFollowUp || ""
   };
+}
+
+function emptyAiAnalysis() {
+  return {
+    summary: "",
+    salesNotes: "",
+    riskFlags: [],
+    talkingPoints: [],
+    recommendedFollowUp: ""
+  };
+}
+
+function parseOpenAiText(result) {
+  if (typeof result.output_text === "string") return result.output_text;
+
+  const output = Array.isArray(result.output) ? result.output : [];
+  const textParts = [];
+
+  output.forEach(item => {
+    const content = Array.isArray(item.content) ? item.content : [];
+    content.forEach(part => {
+      if (typeof part.text === "string") textParts.push(part.text);
+    });
+  });
+
+  return textParts.join("\n");
+}
+
+async function analyzeLead(lead, config) {
+  if (!process.env.OPENAI_API_KEY) return emptyAiAnalysis();
+
+  const labels = leadLabels(lead.answers, config);
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-5.4-mini",
+      input: [
+        {
+          role: "system",
+          content:
+            "You analyze contractor remodeling leads. Return only valid JSON with concise, useful sales notes. Do not make legal, financial, or guaranteed pricing claims."
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            businessName: config.businessName || "",
+            lead: {
+              name: lead.answers.name,
+              postalCode: lead.answers.postalCode,
+              projectType: labels.projectType,
+              timeline: labels.timeline,
+              spaceSize: labels.spaceSize,
+              scope: labels.scope,
+              homeAge: labels.homeAge,
+              budget: labels.budget,
+              message: lead.answers.message || "",
+              qualification: lead.qualification
+            },
+            requiredJsonShape: {
+              summary: "One sentence summary of the lead.",
+              salesNotes: "Helpful private notes for the business owner.",
+              riskFlags: ["Potential concerns or empty array."],
+              talkingPoints: ["Useful follow-up talking points."],
+              recommendedFollowUp: "Suggested next step."
+            }
+          })
+        }
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "lead_ai_analysis",
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              summary: { type: "string" },
+              salesNotes: { type: "string" },
+              riskFlags: {
+                type: "array",
+                items: { type: "string" }
+              },
+              talkingPoints: {
+                type: "array",
+                items: { type: "string" }
+              },
+              recommendedFollowUp: { type: "string" }
+            },
+            required: ["summary", "salesNotes", "riskFlags", "talkingPoints", "recommendedFollowUp"]
+          }
+        }
+      }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI analysis failed with ${response.status}`);
+  }
+
+  const result = await response.json();
+  const text = parseOpenAiText(result);
+  return { ...emptyAiAnalysis(), ...JSON.parse(text) };
 }
 
 async function sendToCrm(lead, config) {
@@ -246,8 +266,15 @@ module.exports = async function handler(req, res) {
       id: `lead_${Date.now()}`,
       createdAt: new Date().toISOString(),
       answers,
-      qualification
+      qualification,
+      aiAnalysis: emptyAiAnalysis()
     };
+    try {
+      lead.aiAnalysis = await analyzeLead(lead, config);
+    } catch (error) {
+      lead.aiAnalysis = { ...emptyAiAnalysis(), error: error.message };
+    }
+
     let crmDelivery;
     try {
       crmDelivery = await sendToCrm(lead, config);

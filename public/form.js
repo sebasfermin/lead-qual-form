@@ -14,83 +14,6 @@ const apiUrl = widget?.dataset.apiUrl || "/api/leads";
 const configUrl = widget?.dataset.configUrl || "";
 const companyId = widget?.dataset.companyId || "demo-remodeling";
 
-const fallbackConfigs = {
-  "demo-remodeling": {
-    copy: {
-      eyebrow: "Project estimate",
-      headline: "Plan your remodel with a clearer starting range",
-      intro: "Answer a few questions and we will estimate the likely project range.",
-      resultEyebrow: "Estimated planning range",
-      resultSummary:
-        "Your request has been sent. A project specialist can use these details to refine the estimate.",
-      finePrint:
-        "This is a broad planning range, not a final quote. A contractor can refine it after reviewing your project.",
-      submitButton: "Get estimate"
-    },
-    fields: {
-      projectType: {
-        question: "What type of work do you need done?",
-        options: [
-          { value: "kitchen", label: "Kitchen remodel" },
-          { value: "bathroom", label: "Bathroom remodel" },
-          { value: "basement", label: "Basement" },
-          { value: "landscaping", label: "Landscaping" },
-          { value: "deck", label: "Deck or patio" },
-          { value: "whole_home", label: "Whole-home renovation" },
-          { value: "other", label: "Other" }
-        ]
-      },
-      timeline: {
-        question: "Where are you in the planning process?",
-        options: [
-          { value: "exploring", label: "Just starting to explore" },
-          { value: "planning", label: "Comparing ideas and prices" },
-          { value: "soon", label: "Ready to hire soon" },
-          { value: "urgent", label: "Need the work done urgently" }
-        ]
-      },
-      spaceSize: {
-        question: "How big is the space?",
-        options: [
-          { value: "small", label: "Small" },
-          { value: "medium", label: "Medium" },
-          { value: "large", label: "Large" },
-          { value: "extra_large", label: "Extra large" }
-        ]
-      },
-      scope: {
-        question: "How intense is the work?",
-        options: [
-          { value: "refresh", label: "Light refresh" },
-          { value: "partial", label: "Partial remodel" },
-          { value: "full", label: "Full teardown" },
-          { value: "structural", label: "Heavy or structural work" }
-        ]
-      },
-      homeAge: {
-        question: "How old is the home?",
-        options: [
-          { value: "newer", label: "Less than 15 years" },
-          { value: "established", label: "15-40 years" },
-          { value: "older", label: "40-75 years" },
-          { value: "historic", label: "75+ years" }
-        ]
-      },
-      budget: {
-        question: "What budget range are you considering?",
-        options: [
-          { value: "under_10k", label: "Under $10k" },
-          { value: "10k_25k", label: "$10k-$25k" },
-          { value: "25k_50k", label: "$25k-$50k" },
-          { value: "50k_100k", label: "$50k-$100k" },
-          { value: "100k_plus", label: "$100k+" },
-          { value: "unknown", label: "I don't know yet" }
-        ]
-      }
-    }
-  }
-};
-
 let currentStep = 0;
 
 function showStep(index) {
@@ -191,8 +114,10 @@ function applyConfig(config) {
 }
 
 async function loadConfig() {
-  applyConfig(fallbackConfigs[companyId]);
-  if (!configUrl) return;
+  if (!configUrl) {
+    formError.textContent = "Form settings are missing.";
+    return;
+  }
 
   try {
     const response = await fetch(configUrl);
@@ -200,7 +125,7 @@ async function loadConfig() {
     const result = await response.json();
     applyConfig(result.config);
   } catch (error) {
-    applyConfig(fallbackConfigs[companyId]);
+    formError.textContent = "Form settings could not load. Please try again later.";
   }
 }
 
