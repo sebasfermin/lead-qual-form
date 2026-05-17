@@ -40,16 +40,8 @@
           "label": "Bathroom remodel"
         },
         {
-          "value": "basement",
-          "label": "Basement"
-        },
-        {
           "value": "landscaping",
           "label": "Landscaping"
-        },
-        {
-          "value": "deck",
-          "label": "Deck or patio"
         },
         {
           "value": "whole_home",
